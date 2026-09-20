@@ -163,13 +163,15 @@ select:focus-visible { outline: 3px solid var(--blue); outline-offset: 3px; }
 .order-summary.is-match { border-left: 3px solid #2459c4; }
 .order-summary dd { overflow-wrap: anywhere; }
 .summary-fields, .detail-order-fields { display: grid; gap: 10px; margin: 14px 0 0; }
-.summary-fields > div, .detail-order-fields > div { display: grid; grid-template-columns: 76px minmax(0, 1fr); gap: 12px; align-items: baseline; }
-.summary-fields dt, .detail-order-fields dt { color: var(--muted); font-size: 12px; }
-.summary-fields dd, .detail-order-fields dd { margin: 0; font-size: 14px; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.detail-meta-fields { gap: 14px 32px; }
+.summary-fields > div, .detail-order-fields > div, .detail-meta-fields > div { display: grid; grid-template-columns: 90px minmax(0, 1fr); gap: 12px; align-items: baseline; }
+.summary-fields dt, .detail-order-fields dt, .detail-meta-fields dt { color: var(--muted); font-size: 12px; }
+.summary-fields dd, .detail-order-fields dd, .detail-meta-fields dd { margin: 0; font-size: 14px; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
 .report-heading { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.report-actions { display: flex; align-items: center; gap: 8px; }
 .report-heading button { color: var(--blue); flex-shrink: 0; }
-.report-disclosure { margin-top: 16px; border-top: 1px solid var(--line); }
-.report-disclosure summary { padding-top: 16px; }
+.report-toggle { padding-left: 10px; padding-right: 10px; }
+.report-content { margin-top: 16px; border-top: 1px solid var(--line); padding-top: 16px; }
 .report-empty { margin: 16px 0 0; }
 .payment-status-1 { background: #eaf5ef; color: #206342; }
 .payment-status-0, .payment-status-5 { background: #fff3dd; color: #805009; }
@@ -177,6 +179,9 @@ select:focus-visible { outline: 3px solid var(--blue); outline-offset: 3px; }
 @media (max-width: 640px) {
  .customer-orders { padding: 0 16px 16px; }
  .order-summary { padding: 16px 12px; contain-intrinsic-size: auto 170px; }
- .summary-fields > div, .detail-order-fields > div { grid-template-columns: 68px minmax(0, 1fr); gap: 8px; }
- .report-heading { align-items: flex-start; }
+ .detail-meta-fields { grid-template-columns: 1fr; gap: 12px; }
+ .summary-fields > div, .detail-order-fields > div, .detail-meta-fields > div { grid-template-columns: 88px minmax(0, 1fr); gap: 8px; }
+ .report-heading { gap: 8px; }
+ .report-actions { gap: 4px; }
+ .report-heading button { padding-left: 9px; padding-right: 9px; font-size: 13px; }
 }

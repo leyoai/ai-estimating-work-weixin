@@ -17,6 +17,7 @@ const applied = ref({ keyword: '', searchType: 'ORDER_ID' as SearchType });
 const page = ref(1); const total = ref(0);
 const selectedOrderId = ref<string>();
 const downloadingPdf = ref(false);
+const reportExpanded = ref(true);
 let returnScroll = 0;
 const searchLabels: Record<SearchType, string> = { ORDER_ID: '订单号', OUT_TRADE_NO: '商户单号', TRANSACTION_ID: '交易单号' };
 // 通知凭据仅存内存，不写入路由、存储或日志。
@@ -68,7 +69,7 @@ async function showDetail(orderId: string) {
   if (busy.value) return;
   selectedOrderId.value = orderId;
   returnScroll = window.scrollY;
-  detail.value = undefined; screen.value = 'detail';
+  detail.value = undefined; reportExpanded.value = true; screen.value = 'detail';
   await action(async () => { detail.value = await api<Detail>(`${prefix}/orders/${encodeURIComponent(orderId)}`); });
   await nextTick(); window.scrollTo(0, 0); document.getElementById('page-title')?.focus();
 }
@@ -149,7 +150,7 @@ onMounted(async () => {
             </div>
             <div class="customer-orders">
               <a v-for="order in row.orders" :id="`order-${order.orderId}`" :key="order.orderId" class="order-summary" :class="{ 'is-match': order.matched }" :href="`?orderId=${encodeURIComponent(order.orderId)}`" :aria-label="`查看订单 ${order.orderId} 详情`" @click.exact.prevent="showDetail(order.orderId)">
-                <div class="order-title"><h3>{{ order.productName }}</h3><span class="status-badge" :class="`payment-status-${order.primaryPayment?.status}`">{{ order.primaryPayment?.statusName || '尚无支付记录' }}</span><span v-if="order.matched" class="match-badge">查询命中</span></div>
+                <div class="order-title"><h3>{{ order.productName }}</h3><span class="status-badge" :class="`status-${order.status}`">{{ order.statusName || '未知状态' }}</span><span v-if="order.matched" class="match-badge">查询命中</span></div>
                 <dl class="summary-fields">
                   <div><dt>订单号</dt><dd translate="no">{{ order.orderId }}</dd></div>
                   <div><dt>下单时间</dt><dd>{{ formatDate(order.createdAt) }}</dd></div>
@@ -165,10 +166,10 @@ onMounted(async () => {
       </section>
       <p v-if="busy && screen === 'detail'" class="loading" role="status">正在加载订单资料…</p>
       <article v-if="detail" class="detail">
-        <section class="panel"><div class="section-heading"><h2>{{ detail.customer.nickname || '客户资料' }}</h2></div><dl><div><dt>用户编号</dt><dd translate="no">{{ detail.customer.userId }}</dd></div><div><dt>注册时间</dt><dd>{{ formatDate(detail.customer.registeredAt) }}</dd></div><div><dt>最近发起咨询</dt><dd>{{ detail.customer.lastConsultAt ? formatDate(detail.customer.lastConsultAt) : '尚未发起咨询' }}</dd></div><div v-if="detail.customer.phone"><dt>手机号</dt><dd>{{ detail.customer.phone }}</dd></div></dl></section>
+        <section class="panel"><div class="section-heading"><h2>{{ detail.customer.nickname || '客户资料' }}</h2></div><dl class="detail-meta-fields"><div><dt>用户编号</dt><dd translate="no">{{ detail.customer.userId }}</dd></div><div><dt>注册时间</dt><dd>{{ formatDate(detail.customer.registeredAt) }}</dd></div><div><dt>最近发起咨询</dt><dd>{{ detail.customer.lastConsultAt ? formatDate(detail.customer.lastConsultAt) : '尚未发起咨询' }}</dd></div><div v-if="detail.customer.phone"><dt>手机号</dt><dd>{{ detail.customer.phone }}</dd></div></dl></section>
         <section class="panel"><h2>订单信息</h2><OrderCore :order="detail.order" /></section>
         <details class="panel disclosure" :open="detail.subjects.length > 0"><summary><span>{{ detail.subjects.length ? '已提交资料' : '答题内容' }}</span><small class="closed-hint">点击展开</small><small class="open-hint">点击收起</small></summary><p v-if="detail.userQuestion">{{ detail.userQuestion }}</p><div v-for="(subject, index) in detail.subjects" :key="index" class="answer"><h3>{{ subject.label || `资料 ${index + 1}` }}</h3><p>姓名：{{ subject.userName || '—' }}</p><p>性别：{{ subject.userGender === 1 ? '男' : subject.userGender === 2 ? '女' : '未填写' }}</p><p>出生日期：{{ subject.userBirthday || '—' }} {{ subject.userBirthTime || '' }}</p><p>出生地：{{ subject.userBirthPlace || '—' }}</p></div><div v-if="!detail.subjects.length"><div v-for="(answer, index) in detail.answers" :key="index" class="answer"><h3>{{ index + 1 }}. {{ answer.question }}</h3><p>{{ answer.answer }}</p></div><p v-if="!detail.answers.length" class="muted">暂无答题记录</p></div></details>
-        <section class="panel report-panel"><div class="report-heading"><h2>付费报告</h2><button v-if="detail.paidReport" :disabled="downloadingPdf" @click="downloadReportPdf">{{ downloadingPdf ? '正在生成 PDF…' : '下载 PDF' }}</button></div><details v-if="detail.paidReport" class="report-disclosure"><summary><span>查看报告内容</span><small class="closed-hint">点击展开</small><small class="open-hint">点击收起</small></summary><div class="report" v-html="reportHtml"></div></details><p v-else class="muted report-empty">报告尚未生成或暂无可展示内容。</p></section>
+        <section class="panel report-panel"><div class="report-heading"><h2>付费报告</h2><div v-if="detail.paidReport" class="report-actions"><button class="quiet report-toggle" aria-controls="paid-report-content" :aria-expanded="reportExpanded" @click="reportExpanded = !reportExpanded">{{ reportExpanded ? '收起报告内容' : '查看报告内容' }}</button><button :disabled="downloadingPdf" @click="downloadReportPdf">{{ downloadingPdf ? '正在生成 PDF…' : '下载 PDF' }}</button></div></div><div v-if="detail.paidReport && reportExpanded" id="paid-report-content" class="report report-content" v-html="reportHtml"></div><p v-else-if="!detail.paidReport" class="muted report-empty">报告尚未生成或暂无可展示内容。</p></section>
         <p v-if="linkMode" class="privacy-note">此页面仅展示本次咨询订单资料。请妥善保管资料链接。</p>
       </article>
     </template>
