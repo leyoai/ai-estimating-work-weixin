@@ -13,9 +13,16 @@ export interface Customer {
   orderCount: number; summaryOrder?: ConsultOrder; orders: ConsultOrder[];
 }
 export interface Detail {
-  customer: Customer; order: ConsultOrder; payments: Payment[]; userQuestion?: string;
-  answers: { question: string; answer: string }[];
-  subjects: { label: string; userName: string; userGender: number; userBirthday: string; userBirthTime: string; userBirthPlace: string }[];
+  customer: Customer; order: ConsultOrder; payments: Payment[]; userQuestion?: string | null;
+  answers: { question: string | null; answer: string | null }[];
+  subjects: {
+    label: string | null;
+    userName: string | null;
+    userGender: number | null;
+    userBirthday: string | null;
+    userBirthTime: string | null;
+    userBirthPlace: string | null;
+  }[];
   paidReportStatus?: string; paidReport?: string;
 }
 export interface Page<T> { records: T[]; total: number; current: number }

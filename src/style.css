@@ -118,9 +118,7 @@ select:focus-visible { outline: 3px solid var(--blue); outline-offset: 3px; }
 .field-heading { display: block; font-size: 12px; color: var(--muted); font-weight: 500; margin: 0 0 6px; }
 .order-title, .payment-heading { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
 .order-title h3 { font-size: 15px; margin: 0; overflow-wrap: anywhere; }
-.status-badge, .match-badge { font-size: 12px; border-radius: 4px; padding: 2px 8px; white-space: nowrap; background: #eef1f6; color: #48566a; }
-.status-0 { background: #fff3dd; color: #805009; }.status-1 { background: #eaf5ef; color: #206342; }.status-3 { background: #f3edfb; color: #6c408e; }
-.match-badge { background: #eaf0ff; color: #2459c4; }
+.match-badge { font-size: 12px; border-radius: 4px; padding: 2px 8px; white-space: nowrap; background: #eaf0ff; color: #2459c4; }
 .compact-fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 24px; margin: 12px 0 0; }
 .compact-fields dd { font-size: 14px; margin: 2px 0 0; font-variant-numeric: tabular-nums; }
 .compact-fields dt { font-size: 12px; }
