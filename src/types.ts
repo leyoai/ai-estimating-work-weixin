@@ -1,4 +1,4 @@
-export type SearchType = 'ORDER_ID' | 'OUT_TRADE_NO' | 'TRANSACTION_ID';
+export type SearchType = 'ORDER_ID' | 'OUT_TRADE_NO' | 'TRANSACTION_ID' | 'SUBJECT_NAME';
 export interface Payment {
   paymentId: string; outTradeNo?: string; transactionId?: string; channelCode?: string;
   status: number; statusName: string; amount: number; createdAt?: string; paidAt?: string; refundedAt?: string;

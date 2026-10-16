@@ -19,7 +19,7 @@ const selectedOrderId = ref<string>();
 const downloadingPdf = ref(false);
 const reportExpanded = ref(true);
 let returnScroll = 0;
-const searchLabels: Record<SearchType, string> = { ORDER_ID: '订单号', OUT_TRADE_NO: '商户单号', TRANSACTION_ID: '交易单号' };
+const searchLabels: Record<SearchType, string> = { ORDER_ID: '订单号', OUT_TRADE_NO: '商户单号', TRANSACTION_ID: '交易单号', SUBJECT_NAME: '测评姓名' };
 // 通知凭据仅存内存，不写入路由、存储或日志。
 const fragment = new URLSearchParams(location.hash.slice(1));
 const linkOrderId = fragment.get('orderId');
@@ -149,7 +149,7 @@ onMounted(async () => {
         <div class="list-toolbar"><h1 class="list-label list-title">客户列表<span class="count">{{ total }}</span></h1>
           <form class="search staff-search" role="search" @submit.prevent="search">
             <select v-model="searchType" name="searchType" aria-label="查询类型" :disabled="busy"><option v-for="(label, value) in searchLabels" :key="value" :value="value">{{ label }}</option></select>
-            <input v-model="keyword" name="keyword" autocomplete="off" type="search" :spellcheck="false" :placeholder="`输入${searchLabels[searchType]}…`" :aria-label="searchLabels[searchType]" maxlength="100" :disabled="busy" /><button class="primary" :disabled="busy">搜索</button>
+            <input v-model="keyword" name="keyword" autocomplete="off" type="search" :spellcheck="false" :placeholder="searchType === 'SUBJECT_NAME' ? '输入测评姓名，支持部分姓名…' : `输入${searchLabels[searchType]}…`" :aria-label="searchLabels[searchType]" maxlength="100" :disabled="busy" /><button class="primary" :disabled="busy">搜索</button>
           </form>
         </div>
         <p v-if="busy" class="loading" role="status">正在加载，请稍候…</p>
@@ -170,7 +170,7 @@ onMounted(async () => {
             </div>
           </section>
         </div>
-        <div v-if="!busy && !error && !customers.length" class="empty"><strong>{{ applied.keyword ? '没有找到匹配的客户' : '暂无客户' }}</strong><p>{{ applied.keyword ? '请核对查询类型和单号，或清空搜索后重试。' : '客户分配给您后，会显示在这里。' }}</p></div>
+        <div v-if="!busy && !error && !customers.length" class="empty"><strong>{{ applied.keyword ? '没有找到匹配的客户' : '暂无客户' }}</strong><p>{{ applied.keyword ? '请核对查询类型和姓名或单号，或清空搜索后重试。' : '客户分配给您后，会显示在这里。' }}</p></div>
         <button v-if="error && !busy" class="retry-button" @click="action(loadCustomers)">重新加载客户</button>
         <nav class="pagination" aria-label="客户分页"><span>共 {{ total }} 位客户</span><div><button :disabled="busy || page <= 1" @click="turnPage(-1)">上一页</button><span aria-live="polite">{{ page }} / {{ Math.max(1, Math.ceil(total / 20)) }}</span><button :disabled="busy || page * 20 >= total" @click="turnPage(1)">下一页</button></div></nav>
       </section>
