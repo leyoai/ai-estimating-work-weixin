@@ -1,3 +1,4 @@
+export type ConsultStatus = 'ALL' | 'CONSULTED' | 'NOT_CONSULTED';
 export type SearchType = 'ORDER_ID' | 'OUT_TRADE_NO' | 'TRANSACTION_ID' | 'SUBJECT_NAME';
 export interface Payment {
   paymentId: string; outTradeNo?: string; transactionId?: string; channelCode?: string;

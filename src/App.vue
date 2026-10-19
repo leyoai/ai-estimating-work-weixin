@@ -2,7 +2,7 @@
 import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue';
 import DOMPurify from 'dompurify';
 import { marked } from 'marked';
-import type { Customer, Detail, Page, SearchType } from './types';
+import type { ConsultStatus, Customer, Detail, Page, SearchType } from './types';
 import { formatDate } from './types';
 import OrderCore from './components/OrderCore.vue';
 const prefix = '/admin/consult/staff';
@@ -13,7 +13,8 @@ const account = ref(''); const password = ref(''); const busy = ref(false); cons
 const screen = ref<'login' | 'customers' | 'detail'>('login');
 const customers = ref<Customer[]>([]); const detail = ref<Detail>();
 const keyword = ref(''); const searchType = ref<SearchType>('ORDER_ID');
-const applied = ref({ keyword: '', searchType: 'ORDER_ID' as SearchType });
+const consultStatus = ref<ConsultStatus>('CONSULTED');
+const applied = ref({ keyword: '', searchType: 'ORDER_ID' as SearchType, consultStatus: 'CONSULTED' as ConsultStatus });
 const page = ref(1); const total = ref(0);
 const selectedOrderId = ref<string>();
 const downloadingPdf = ref(false);
@@ -49,6 +50,8 @@ async function login() { await action(async () => {
   const result = await api<{ token: string; memberName: string }>(prefix + '/login', { method: 'POST', body: JSON.stringify({ account: account.value, password: password.value }) });
   token.value = result.token; employeeName.value = result.memberName; password.value = '';
   sessionStorage.setItem('consultStaffToken', token.value); sessionStorage.setItem('consultStaffName', employeeName.value);
+  keyword.value = ''; consultStatus.value = 'CONSULTED';
+  applied.value = { keyword: '', searchType: searchType.value, consultStatus: 'CONSULTED' };
   page.value = 1; screen.value = 'customers'; await loadCustomers();
 });
   if (token.value && !error.value) await openRequestedOrder();
@@ -62,7 +65,12 @@ async function loadCustomers() {
   customers.value = result.records; total.value = Number(result.total);
 }
 async function search() {
-  applied.value = { keyword: keyword.value.trim(), searchType: searchType.value }; page.value = 1;
+  consultStatus.value = 'ALL';
+  applied.value = { keyword: keyword.value.trim(), searchType: searchType.value, consultStatus: 'ALL' }; page.value = 1;
+  await action(loadCustomers);
+}
+async function changeConsultStatus() {
+  applied.value = { ...applied.value, consultStatus: consultStatus.value }; page.value = 1;
   await action(loadCustomers);
 }
 async function showDetail(orderId: string) {
@@ -147,10 +155,13 @@ onMounted(async () => {
       <div v-if="screen === 'detail'" class="page-heading"><h1 id="page-title" tabindex="-1">订单详情</h1><button v-if="!linkMode" :disabled="busy" @click="back">返回客户列表</button></div>
       <section v-if="screen === 'customers'" class="data-panel">
         <div class="list-toolbar"><h1 class="list-label list-title">客户列表<span class="count">{{ total }}</span></h1>
+          <div class="customer-filters">
+          <div class="consult-status"><label for="consult-status">咨询状态</label><select id="consult-status" v-model="consultStatus" name="consultStatus" autocomplete="off" :disabled="busy" @change="changeConsultStatus"><option value="ALL">全部</option><option value="CONSULTED">已发起咨询</option><option value="NOT_CONSULTED">未发起咨询</option></select></div>
           <form class="search staff-search" role="search" @submit.prevent="search">
             <select v-model="searchType" name="searchType" aria-label="查询类型" :disabled="busy"><option v-for="(label, value) in searchLabels" :key="value" :value="value">{{ label }}</option></select>
             <input v-model="keyword" name="keyword" autocomplete="off" type="search" :spellcheck="false" :placeholder="searchType === 'SUBJECT_NAME' ? '输入测评姓名，支持部分姓名…' : `输入${searchLabels[searchType]}…`" :aria-label="searchLabels[searchType]" maxlength="100" :disabled="busy" /><button class="primary" :disabled="busy">搜索</button>
           </form>
+          </div>
         </div>
         <p v-if="busy" class="loading" role="status">正在加载，请稍候…</p>
         <div class="customer-groups">
@@ -170,7 +181,7 @@ onMounted(async () => {
             </div>
           </section>
         </div>
-        <div v-if="!busy && !error && !customers.length" class="empty"><strong>{{ applied.keyword ? '没有找到匹配的客户' : '暂无客户' }}</strong><p>{{ applied.keyword ? '请核对查询类型和姓名或单号，或清空搜索后重试。' : '客户分配给您后，会显示在这里。' }}</p></div>
+        <div v-if="!busy && !error && !customers.length" class="empty"><strong>{{ applied.keyword ? '没有找到匹配的客户' : '暂无客户' }}</strong><p>{{ applied.keyword ? '请核对查询类型和姓名或单号，或清空搜索后重试。' : '当前咨询状态下暂无客户，可切换咨询状态查看。' }}</p></div>
         <button v-if="error && !busy" class="retry-button" @click="action(loadCustomers)">重新加载客户</button>
         <nav class="pagination" aria-label="客户分页"><span>共 {{ total }} 位客户</span><div><button :disabled="busy || page <= 1" @click="turnPage(-1)">上一页</button><span aria-live="polite">{{ page }} / {{ Math.max(1, Math.ceil(total / 20)) }}</span><button :disabled="busy || page * 20 >= total" @click="turnPage(1)">下一页</button></div></nav>
       </section>
