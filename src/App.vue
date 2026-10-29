@@ -6,6 +6,7 @@ import type { ConsultStatus, Customer, Detail, Page, SearchType } from './types'
 import { formatDate } from './types';
 import OrderCore from './components/OrderCore.vue';
 const prefix = '/admin/consult/staff';
+const applicationPolicyUrl = `${import.meta.env.BASE_URL}application-free-use.html`;
 const apiBase = import.meta.env.VITE_API_BASE || `${import.meta.env.BASE_URL}api`;
 const token = ref(sessionStorage.getItem('consultStaffToken') || '');
 const employeeName = ref(sessionStorage.getItem('consultStaffName') || '客服');
@@ -195,5 +196,5 @@ onMounted(async () => {
         <p v-if="linkMode" class="privacy-note">此页面仅展示本次咨询订单资料。请妥善保管资料链接。</p>
       </article>
     </template>
-  </main><footer>悦测 · 客户服务台</footer>
+  </main><footer>悦测 · 客户服务台 · <a :href="applicationPolicyUrl">应用免费使用说明</a></footer>
 </template>
